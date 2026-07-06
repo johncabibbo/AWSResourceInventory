@@ -138,20 +138,39 @@ If `aws` isn't found, jump to [Troubleshooting](#aws-command-not-found).
 
 ## 4. Create AWS access keys (IAM)
 
-Your CLI needs an **access key** (an ID + a secret) tied to an IAM identity. **Never use your AWS account root user for day-to-day access** — create an IAM user.
+Your CLI needs an **access key** (an ID + a secret) tied to an IAM identity. **Never use your AWS account root user for day-to-day access** — create a dedicated IAM user.
 
-1. Sign in to the **AWS Console** → search for and open **IAM**.
-2. **Users → Create user** (or pick an existing user). Give it a name like `cli-inventory`.
-3. Attach permissions — for this tool, either:
-   - the AWS-managed **`ReadOnlyAccess`** policy (simplest for a lab), **or**
-   - a tight custom policy (see [section 7](#7-iam-permissions-for-aws-resource-inventory)).
-4. Open the user → **Security credentials** tab → **Create access key**.
-5. Choose **Command Line Interface (CLI)** as the use case, acknowledge the warning, **Create**.
-6. **Copy both values now:**
-   - **Access key ID** — looks like `AKIA...`
-   - **Secret access key** — shown **only once**. If you lose it, delete the key and make a new one.
+### Step 4a — Create the IAM user
 
-> Download the `.csv` or paste the two values somewhere safe temporarily. You'll enter them in the next step, then you don't need them again.
+1. Sign in to the **AWS Console** as an administrator → in the top search bar, type **IAM** and open it.
+2. In the left sidebar choose **Users**, then click **Create user** (top right).
+3. **User name:** enter something descriptive, e.g. `cli-inventory`.
+4. Leave **"Provide user access to the AWS Management Console"** *unchecked* — this user only needs programmatic (CLI/API) access, not console login. Click **Next**.
+5. **Set permissions →** choose **Attach policies directly**, then either:
+   - tick the AWS-managed **`ReadOnlyAccess`** policy (simplest for a lab), **or**
+   - use a tight custom policy scoped to just this tool (see [section 7](#7-iam-permissions-for-aws-resource-inventory)).
+6. Click **Next → Create user**.
+
+### Step 4b — Generate an access key
+
+1. Click the user you just created → open the **Security credentials** tab.
+2. Under **Access keys**, click **Create access key**.
+3. For **Use case**, choose **Command Line Interface (CLI)**, tick the confirmation checkbox, click **Next**, then **Create access key**.
+4. On the final screen AWS shows the key **one time**:
+   - **Access key ID** — looks like `AKIA...` (this part is not secret)
+   - **Secret access key** — a long random string, shown **only here, only now**
+
+> ### ⚠️ SAVE THE SECRET ACCESS KEY NOW — YOU CANNOT GET IT AGAIN
+>
+> - **The secret access key is displayed only once.** After you leave this screen, **AWS can never show or recover it.** There is no "reveal" button and no way to look it up later.
+> - **If you lose it, it cannot be recreated** — your only option is to **delete the key and create a brand-new one** (then re-run `aws configure`).
+> - **Save it in a secure place**, such as a password manager (1Password, Bitwarden, Keychain) — **not** in a plain text file, email, chat message, or anything committed to Git.
+> - **Treat it like a password to your AWS account.** The access key ID **and** secret together **grant full programmatic access to your AWS account at the permissions you assigned** — anyone who obtains them can act as this user (create/read/delete resources, and potentially run up charges). **Never share it or paste it into code.**
+> - Click **Download .csv file** on this screen to capture both values safely, then move them into your password manager and delete the download.
+>
+> If a key is ever exposed (committed, emailed, pasted publicly), **delete/deactivate it immediately** in IAM → the user → Security credentials, and create a new one.
+
+You'll paste these two values into `aws configure` in the next step; after that they live (encrypted only if you encrypt your disk) in `~/.aws/credentials`.
 
 ---
 
